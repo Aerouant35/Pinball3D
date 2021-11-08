@@ -24,11 +24,13 @@ public class Collision : MonoBehaviour
     private float Acc = -9.81f;
 
     private float Tleft;
+    private float TRight;
     // Start is called before the first frame update
     void Start()
     {
         speed = Vector3.zero;
         Tleft = 0f;
+        TRight = 0f;
 
 
     }
@@ -36,9 +38,11 @@ public class Collision : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        
-        gameObject.transform.position += speed* Time.deltaTime;
+        Vector3 ActualSpeed = speed;
+        gameObject.transform.position += speed * Time.deltaTime;
         speed.y += Acc * Time.deltaTime;
+        Vector3 BallPos = gameObject.transform.position;
+
 
         foreach (var plane in Planes)
         {
@@ -66,32 +70,51 @@ public class Collision : MonoBehaviour
             NormalPlane = wall.transform.up;
             XPlane = wall.transform.right;
             ZPlane = wall.transform.forward;
-            VplaneBall = gameObject.transform.position - wall.gameObject.transform.position;
+            VplaneBall = BallPos - wall.gameObject.transform.position;
             
             if (Mathf.Abs( Vector3.Dot(VplaneBall,NormalPlane))<gameObject.transform.localScale.x/2 &&
                 Mathf.Abs( Vector3.Dot(VplaneBall,XPlane))< wall.transform.localScale.x *10/2 &&
                 Mathf.Abs( Vector3.Dot(VplaneBall,ZPlane))<wall.transform.localScale.z*10/2)
             {
-                
 
-
-                
+                BallPos -= ActualSpeed * Time.deltaTime;
+                for (int i = 0; i < 1000; i++)
+                {
+                    BallPos += i / 1000 * ActualSpeed * Time.deltaTime;
+                    VplaneBall = BallPos - wall.gameObject.transform.position;
+                    if (Mathf.Abs(Vector3.Dot(VplaneBall, NormalPlane)) < gameObject.transform.localScale.x / 2)
+                    {
+                        break;
+                    }
+                }
+                gameObject.transform.position = BallPos;
                 Vector3 perpendicular= NormalPlane * Vector3.Dot(speed, NormalPlane);
                 Vector3 parallel = speed - perpendicular;
-                speed = parallel - 1f*perpendicular;
+                speed = parallel - .9f*perpendicular;
             }
         }
 
         foreach (var cylinder in Cylinders)
         {
             float CylinderRadius = cylinder.transform.localScale.x / 2;
-            float dist = Vector3.Distance(cylinder.transform.position, gameObject.transform.position);
+            float dist = Vector3.Distance(cylinder.transform.position, BallPos);
             if (dist< gameObject.transform.localScale.x/2 + CylinderRadius)
             {
+                BallPos -= ActualSpeed * Time.deltaTime;
+                for (int i = 0; i < 1000; i++)
+                {
+                    BallPos += i / 1000 * ActualSpeed * Time.deltaTime;
+                    dist = Vector3.Distance(cylinder.transform.position, BallPos);
+                    if (dist < gameObject.transform.localScale.x / 2 + CylinderRadius)
+                    {
+                        break;
+                    }
+                }
+                gameObject.transform.position = BallPos;
                 Vector3 CylinderBall = gameObject.transform.position - cylinder.transform.position;
                 Vector3 perpendicular= CylinderBall * Vector3.Dot(speed, CylinderBall);
                 Vector3 parallel = speed - perpendicular;
-                speed = parallel -  1.5f*perpendicular;
+                speed = 1.5f*parallel -  1.5f*perpendicular;
 
             }
         }
@@ -103,17 +126,27 @@ public class Collision : MonoBehaviour
             NormalPlane = flipper.transform.up;
             XPlane = flipper.transform.right;
             ZPlane = flipper.transform.forward;
-            VplaneBall = gameObject.transform.position - flipper.gameObject.transform.position - flipper.transform.up* flipper.transform.localScale.y/2;
+            
+            VplaneBall = BallPos - flipper.gameObject.transform.position - flipper.transform.up* flipper.transform.localScale.y/2;
             if (Mathf.Abs( Vector3.Dot(VplaneBall,NormalPlane))<gameObject.transform.localScale.x/2 &&
-                Mathf.Abs( Vector3.Dot(VplaneBall,XPlane))< flipper.transform.localScale.x/2 &&
-                Mathf.Abs( Vector3.Dot(VplaneBall,ZPlane))<flipper.transform.localScale.z/2)
+                Mathf.Abs( Vector3.Dot(VplaneBall,XPlane))< flipper.transform.localScale.x/2 + gameObject.transform.localScale.x / 2 &&
+                Mathf.Abs( Vector3.Dot(VplaneBall,ZPlane))<flipper.transform.localScale.z/2 + gameObject.transform.localScale.x / 2)
             {
 
-                float penetration = Mathf.Abs(Vector3.Dot(VplaneBall, NormalPlane)) - gameObject.transform.localScale.x / 2;
-                gameObject.transform.position += penetration * NormalPlane; 
+                BallPos -= ActualSpeed * Time.deltaTime;
+                for (int i = 0; i < 1000; i++)
+                {
+                    BallPos += i / 1000 * ActualSpeed * Time.deltaTime;
+                    VplaneBall = BallPos - flipper.gameObject.transform.position - flipper.transform.up * flipper.transform.localScale.y / 2;
+                    if (Mathf.Abs(Vector3.Dot(VplaneBall, NormalPlane)) < gameObject.transform.localScale.x / 2)
+                    {
+                        break;
+                    }
+                }
+                gameObject.transform.position = BallPos;
                 Vector3 perpendicular= NormalPlane * Vector3.Dot(speed, NormalPlane);
                 Vector3 parallel = speed - perpendicular;
-                speed = parallel - (1-5*Input.GetAxis("Horizontal" ))*perpendicular;
+                speed = parallel - perpendicular;
             }
         }
 
@@ -128,9 +161,22 @@ public class Collision : MonoBehaviour
             Tleft -= 5*Time.deltaTime;
             Tleft = Mathf.Max(0, Tleft);
         }
+        if (Input.GetAxis("Horizontal") > 0)
+        {
+            TRight += 5 * Time.deltaTime;
+            TRight = Mathf.Min(1, TRight);
+        }
+        else
+        {
+            TRight -= 5 * Time.deltaTime;
+            TRight = Mathf.Max(0, TRight);
+        }
         Debug.Log( Tleft);
         LeftFlipper.transform.localEulerAngles = new Vector3(0, Mathf.Lerp(35, -35,Tleft),0);
-        
+        RightFlipper.transform.localEulerAngles = new Vector3(0, Mathf.Lerp(-35, 35, TRight),0);
+
+
+
 
     }
 
