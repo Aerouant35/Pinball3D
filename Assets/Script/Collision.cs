@@ -4,12 +4,7 @@ using UnityEngine;
 
 public class Collision : MonoBehaviour
 {
-    struct Ruler
-    {
-        public Vector3 Base;
-        public Vector3 Axis;
-    }
-    
+
     
     private Vector3 speed;
     
@@ -23,12 +18,17 @@ public class Collision : MonoBehaviour
     public List<GameObject> Planes;
     public List<GameObject> Cylinders;
     public List<GameObject> Walls;
+    public List<GameObject> Flippers;
+    public GameObject LeftFlipper;
+    public GameObject RightFlipper;
     private float Acc = -9.81f;
+
+    private float Tleft;
     // Start is called before the first frame update
     void Start()
     {
         speed = Vector3.zero;
-
+        Tleft = 0f;
 
 
     }
@@ -72,7 +72,7 @@ public class Collision : MonoBehaviour
                 Mathf.Abs( Vector3.Dot(VplaneBall,XPlane))< wall.transform.localScale.x *10/2 &&
                 Mathf.Abs( Vector3.Dot(VplaneBall,ZPlane))<wall.transform.localScale.z*10/2)
             {
-                print("col");
+                
 
 
                 
@@ -96,7 +96,40 @@ public class Collision : MonoBehaviour
             }
         }
         
+        //flipper
+
+        foreach (var flipper in Flippers)
+        {
+            NormalPlane = flipper.transform.up;
+            XPlane = flipper.transform.right;
+            ZPlane = flipper.transform.forward;
+            VplaneBall = gameObject.transform.position - flipper.gameObject.transform.position - flipper.transform.up* flipper.transform.localScale.y/2;
+            if (Mathf.Abs( Vector3.Dot(VplaneBall,NormalPlane))<gameObject.transform.localScale.x/2 &&
+                Mathf.Abs( Vector3.Dot(VplaneBall,XPlane))< flipper.transform.localScale.x/2 &&
+                Mathf.Abs( Vector3.Dot(VplaneBall,ZPlane))<flipper.transform.localScale.z/2)
+            {
+
+                float penetration = Mathf.Abs(Vector3.Dot(VplaneBall, NormalPlane)) - gameObject.transform.localScale.x / 2;
+                gameObject.transform.position += penetration * NormalPlane; 
+                Vector3 perpendicular= NormalPlane * Vector3.Dot(speed, NormalPlane);
+                Vector3 parallel = speed - perpendicular;
+                speed = parallel - (1-5*Input.GetAxis("Horizontal" ))*perpendicular;
+            }
+        }
+
         
+        if (Input.GetAxis("Horizontal" )<0)
+        {
+            Tleft += 5*Time.deltaTime;
+            Tleft= Mathf.Min(1, Tleft);
+        }
+        else
+        {
+            Tleft -= 5*Time.deltaTime;
+            Tleft = Mathf.Max(0, Tleft);
+        }
+        Debug.Log( Tleft);
+        LeftFlipper.transform.localEulerAngles = new Vector3(0, Mathf.Lerp(35, -35,Tleft),0);
         
 
     }
