@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,42 +7,56 @@ using UnityEngine.UI;
 public class BallLauncher : MonoBehaviour
 {
     private float LaunchPower;
+    
     private Vector3 InitPos;
-    public Slider LaunchPowerUI;
-    public GameObject Ball;
+    
+    [SerializeField]
+    private Slider launchPowerUI;
+        
+    [Header("Parameters")]
+    [SerializeField]
+    private float maxPower = 2;
 
-    private Collision colscript;
+    [SerializeField]
+    private float posThreshold = 2;
+
+    [SerializeField]
+    private float deltaForce = 2;
+
+    [SerializeField]
+    private float deltaPosition = 5;
+    
     // Start is called before the first frame update
     void Start()
     {
-        InitPos = gameObject.transform.position;
-        colscript= Ball.GetComponent<Collision>();
+        InitPos = transform.position;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey(KeyCode.Space))
+        transform.position = LaunchBall();
+    }
+
+    private Vector3 LaunchBall()
+    {
+        if (Input.GetButton("Launcher"))
         {
             LaunchPower += Time.deltaTime;
-            LaunchPower = Mathf.Min(2f, LaunchPower);
-            
+            LaunchPower = Math.Min(LaunchPower, maxPower);
         }
 
-        if (Input.GetKeyUp(KeyCode.Space))
+        if (Input.GetButtonUp("Launcher"))
         {
-            if (Ball.transform.position.x>5)
+            if (Collision.Instance.transform.position.x > posThreshold)
             {
-                colscript.speed.z += LaunchPower * 15;
+                Collision.Instance.VectorSpeed.z += LaunchPower * deltaForce;
             }
             
-            LaunchPower = 0;
-           
+            launchPowerUI.value = LaunchPower = 0;
         }
 
-        LaunchPowerUI.value = LaunchPower/2;
-        gameObject.transform.position = InitPos - new Vector3(0f,0f,LaunchPower/5) ;
-        
+        launchPowerUI.value = LaunchPower / maxPower;
+        return InitPos - new Vector3( 0f, 0f, LaunchPower / deltaPosition);
     }
-    
 }

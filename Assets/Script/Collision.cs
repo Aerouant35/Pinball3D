@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,7 +6,8 @@ using UnityEngine.Serialization;
 
 public class Collision : MonoBehaviour
 {
-    private Vector3 VectorSpeed;
+    public static Collision Instance;
+    
     private Transform BallTransform;
     
     private float Tleft;
@@ -17,6 +19,7 @@ public class Collision : MonoBehaviour
     private int FramesCut = 1000;
     private int Width = 5;
 
+    [Header("Parameters")]
     [SerializeField]
     private float acceleration = -9.81f;
     
@@ -42,6 +45,18 @@ public class Collision : MonoBehaviour
     [SerializeField]
     private Transform[] FlippersCol;
     
+    [HideInInspector]
+    public Vector3 VectorSpeed;
+
+    private void Awake()
+    {
+        if (!ReferenceEquals(Instance, null)){
+            Destroy(Instance);
+        }
+        
+        Instance = this;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -72,7 +87,7 @@ public class Collision : MonoBehaviour
 
     private void FlipperInput()
     {
-        if (Input.GetAxis("FlipperLeft") > 0)
+        if (Input.GetButton("FlipperLeft"))
         {
             Tleft += speedRotation * Time.deltaTime;
             Tleft = Mathf.Min(1, Tleft);
@@ -83,7 +98,7 @@ public class Collision : MonoBehaviour
             Tleft = Mathf.Max(0, Tleft);
         }
         
-        if (Input.GetAxis("FlipperRight") > 0)
+        if (Input.GetButton("FlipperRight"))
         {
             TRight += speedRotation * Time.deltaTime;
             TRight = Mathf.Min(1, TRight);
