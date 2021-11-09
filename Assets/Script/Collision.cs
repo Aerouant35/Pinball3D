@@ -1,186 +1,246 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Collision : MonoBehaviour
 {
-
+    private Vector3 VectorSpeed;
+    private Transform BallTransform;
     
-    private Vector3 speed;
-    
-    private Vector3 VplaneBall;
-    private Vector3 NormalPlane;
-    private Vector3 XPlane;
-    private Vector3 ZPlane;
-    private Vector3 HorPlane;
-    private Vector3 NormalSpeed;
-    private Vector3 HorSpeed;
-    public List<GameObject> Planes;
-    public List<GameObject> Cylinders;
-    public List<GameObject> Walls;
-    public List<GameObject> Flippers;
-    public GameObject LeftFlipper;
-    public GameObject RightFlipper;
-    private float Acc = -9.81f;
-
     private float Tleft;
     private float TRight;
+    
+    private float BallRadius;
+    private float ForceDelta = 0.5f;
+    
+    private int FramesCut = 1000;
+    private int Width = 5;
+
+    [SerializeField]
+    private float acceleration = -9.81f;
+    
+    [SerializeField]
+    private float speedRotation = 5;
+    
+    [SerializeField]
+    private float angleFlippers = 35;
+
+    [Header("Entities")]
+    [SerializeField]
+    private List<Transform> Planes;
+    
+    [SerializeField]
+    private List<Transform> Cylinders;
+    
+    [SerializeField]
+    private List<Transform> Walls;
+    
+    [SerializeField]
+    private List<Transform> Flippers;
+    
+    [SerializeField]
+    private Transform[] FlippersCol;
+    
     // Start is called before the first frame update
     void Start()
     {
-        speed = Vector3.zero;
+        BallTransform = transform;
+        BallRadius = BallTransform.localScale.x / 2;
+        
+        VectorSpeed = Vector3.zero;
         Tleft = 0f;
         TRight = 0f;
-
-
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        Vector3 ActualSpeed = speed;
-        gameObject.transform.position += speed * Time.deltaTime;
-        speed.y += Acc * Time.deltaTime;
-        Vector3 BallPos = gameObject.transform.position;
+        VectorSpeed.y += acceleration * Time.deltaTime;
 
-
-        foreach (var plane in Planes)
-        {
-            NormalPlane = plane.transform.up;
-            XPlane = plane.transform.right;
-            ZPlane = plane.transform.forward;
-            VplaneBall = gameObject.transform.position - plane.gameObject.transform.position;
-            
-            if (Mathf.Abs( Vector3.Dot(VplaneBall,NormalPlane))<gameObject.transform.localScale.x/2 &&
-                Mathf.Abs( Vector3.Dot(VplaneBall,XPlane))< plane.transform.localScale.x *10/2 &&
-                Mathf.Abs( Vector3.Dot(VplaneBall,ZPlane))<plane.transform.localScale.z*10/2)
-            {
-                print("col");
-
-
-                
-                Vector3 perpendicular= NormalPlane * Vector3.Dot(speed, NormalPlane);
-                Vector3 parallel = speed - perpendicular;
-                speed = parallel - 0.5f *perpendicular;
-            }
-        }
+        FlipperInput();
         
-        foreach (var wall in Walls)
-        {
-            NormalPlane = wall.transform.up;
-            XPlane = wall.transform.right;
-            ZPlane = wall.transform.forward;
-            VplaneBall = BallPos - wall.gameObject.transform.position;
-            
-            if (Mathf.Abs( Vector3.Dot(VplaneBall,NormalPlane))<gameObject.transform.localScale.x/2 &&
-                Mathf.Abs( Vector3.Dot(VplaneBall,XPlane))< wall.transform.localScale.x *10/2 &&
-                Mathf.Abs( Vector3.Dot(VplaneBall,ZPlane))<wall.transform.localScale.z*10/2)
-            {
+        PlaneCollision(BallTransform);
+        BallTransform.position = WallCollision(BallTransform);
+        BallTransform.position = BumperCollision(BallTransform);
+        BallTransform.position = FlipperCollision(BallTransform);
 
-                BallPos -= ActualSpeed * Time.deltaTime;
-                for (int i = 0; i < 1000; i++)
-                {
-                    BallPos += i / 1000 * ActualSpeed * Time.deltaTime;
-                    VplaneBall = BallPos - wall.gameObject.transform.position;
-                    if (Mathf.Abs(Vector3.Dot(VplaneBall, NormalPlane)) < gameObject.transform.localScale.x / 2)
-                    {
-                        break;
-                    }
-                }
-                gameObject.transform.position = BallPos;
-                Vector3 perpendicular= NormalPlane * Vector3.Dot(speed, NormalPlane);
-                Vector3 parallel = speed - perpendicular;
-                speed = parallel - .9f*perpendicular;
-            }
-        }
-
-        foreach (var cylinder in Cylinders)
-        {
-            float CylinderRadius = cylinder.transform.localScale.x / 2;
-            float dist = Vector3.Distance(cylinder.transform.position, BallPos);
-            if (dist< gameObject.transform.localScale.x/2 + CylinderRadius)
-            {
-                BallPos -= ActualSpeed * Time.deltaTime;
-                for (int i = 0; i < 1000; i++)
-                {
-                    BallPos += i / 1000 * ActualSpeed * Time.deltaTime;
-                    dist = Vector3.Distance(cylinder.transform.position, BallPos);
-                    if (dist < gameObject.transform.localScale.x / 2 + CylinderRadius)
-                    {
-                        break;
-                    }
-                }
-                gameObject.transform.position = BallPos;
-                Vector3 CylinderBall = gameObject.transform.position - cylinder.transform.position;
-                Vector3 perpendicular= CylinderBall * Vector3.Dot(speed, CylinderBall);
-                Vector3 parallel = speed - perpendicular;
-                speed = 1.5f*parallel -  1.5f*perpendicular;
-
-            }
-        }
+        transform.position = BallTransform.position;
         
-        //flipper
+        transform.position += VectorSpeed * Time.deltaTime;
+    }
 
-        foreach (var flipper in Flippers)
+    private void FlipperInput()
+    {
+        if (Input.GetAxis("FlipperLeft") > 0)
         {
-            NormalPlane = flipper.transform.up;
-            XPlane = flipper.transform.right;
-            ZPlane = flipper.transform.forward;
-            
-            VplaneBall = BallPos - flipper.gameObject.transform.position - flipper.transform.up* flipper.transform.localScale.y/2;
-            if (Mathf.Abs( Vector3.Dot(VplaneBall,NormalPlane))<gameObject.transform.localScale.x/2 &&
-                Mathf.Abs( Vector3.Dot(VplaneBall,XPlane))< flipper.transform.localScale.x/2 + gameObject.transform.localScale.x / 2 &&
-                Mathf.Abs( Vector3.Dot(VplaneBall,ZPlane))<flipper.transform.localScale.z/2 + gameObject.transform.localScale.x / 2)
-            {
-
-                BallPos -= ActualSpeed * Time.deltaTime;
-                for (int i = 0; i < 1000; i++)
-                {
-                    BallPos += i / 1000 * ActualSpeed * Time.deltaTime;
-                    VplaneBall = BallPos - flipper.gameObject.transform.position - flipper.transform.up * flipper.transform.localScale.y / 2;
-                    if (Mathf.Abs(Vector3.Dot(VplaneBall, NormalPlane)) < gameObject.transform.localScale.x / 2)
-                    {
-                        break;
-                    }
-                }
-                gameObject.transform.position = BallPos;
-                Vector3 perpendicular= NormalPlane * Vector3.Dot(speed, NormalPlane);
-                Vector3 parallel = speed - perpendicular;
-                speed = parallel - perpendicular;
-            }
-        }
-
-        
-        if (Input.GetAxis("Horizontal" )<0)
-        {
-            Tleft += 5*Time.deltaTime;
-            Tleft= Mathf.Min(1, Tleft);
+            Tleft += speedRotation * Time.deltaTime;
+            Tleft = Mathf.Min(1, Tleft);
         }
         else
         {
-            Tleft -= 5*Time.deltaTime;
+            Tleft -= speedRotation * Time.deltaTime;
             Tleft = Mathf.Max(0, Tleft);
         }
-        if (Input.GetAxis("Horizontal") > 0)
+        
+        if (Input.GetAxis("FlipperRight") > 0)
         {
-            TRight += 5 * Time.deltaTime;
+            TRight += speedRotation * Time.deltaTime;
             TRight = Mathf.Min(1, TRight);
         }
         else
         {
-            TRight -= 5 * Time.deltaTime;
+            TRight -= speedRotation * Time.deltaTime;
             TRight = Mathf.Max(0, TRight);
         }
-        Debug.Log( Tleft);
-        LeftFlipper.transform.localEulerAngles = new Vector3(0, Mathf.Lerp(35, -35,Tleft),0);
-        RightFlipper.transform.localEulerAngles = new Vector3(0, Mathf.Lerp(-35, 35, TRight),0);
+        
+        Debug.Log(Tleft);
+        
+        Flippers[0].localEulerAngles = new Vector3(0, Mathf.Lerp(angleFlippers, -angleFlippers,Tleft),0);
+        Flippers[1].localEulerAngles = new Vector3(0, Mathf.Lerp(-angleFlippers, angleFlippers, TRight),0);
+    }
+    
+    private void PlaneCollision(Transform ballTransform)
+    {
+        ForceDelta = 0.5f;
+        
+        foreach (var plane in Planes)
+        {
+            Transform planeTrans = plane.transform;
+            
+            Vector3 normalPlane = planeTrans.up;
+            Vector3 vectorPlaneBall = ballTransform.position - planeTrans.position;
 
-
-
-
+            if (!(Mathf.Abs(Vector3.Dot(vectorPlaneBall, normalPlane)) < BallRadius) ||
+                !(Mathf.Abs(Vector3.Dot(vectorPlaneBall, planeTrans.right)) < planeTrans.localScale.x * Width) ||
+                !(Mathf.Abs(Vector3.Dot(vectorPlaneBall, planeTrans.forward)) < planeTrans.localScale.z * Width)) continue;
+            
+            Vector3 perpendicular = normalPlane * Vector3.Dot(VectorSpeed, normalPlane);
+            Vector3 parallel = VectorSpeed - perpendicular;
+                
+            VectorSpeed = parallel - perpendicular * ForceDelta;
+        }
     }
 
+    private Vector3 WallCollision(Transform ballTransform)
+    {
+        ForceDelta = 0.9f;
+        
+        foreach (var wall in Walls)
+        {
+            Transform wallTrans = wall.transform;
 
-    
+            Vector3 tempBallPos = ballTransform.position;
+            Vector3 normalWall = wallTrans.up;
+            Vector3 vectorWallBall = ballTransform.position - wallTrans.position;
 
+            if (!(Mathf.Abs(Vector3.Dot(vectorWallBall, normalWall)) < BallRadius) ||
+                !(Mathf.Abs(Vector3.Dot(vectorWallBall, wallTrans.right)) < wallTrans.localScale.x * Width) ||
+                !(Mathf.Abs(Vector3.Dot(vectorWallBall, wallTrans.forward)) < wallTrans.localScale.z * Width)) continue;
+            
+            tempBallPos -= VectorSpeed * Time.deltaTime;
+
+            for (int i = 0; i < FramesCut; i++)
+            {
+                tempBallPos += i / FramesCut * VectorSpeed * Time.deltaTime;
+                vectorWallBall = tempBallPos - wallTrans.position;
+                    
+                if (Mathf.Abs(Vector3.Dot(vectorWallBall, normalWall)) < BallRadius)
+                {
+                    break;
+                }
+            }
+            
+            Vector3 perpendicular= normalWall * Vector3.Dot(VectorSpeed, normalWall);
+            Vector3 parallel = VectorSpeed - perpendicular;
+            
+            VectorSpeed = parallel - perpendicular * ForceDelta;
+
+            return tempBallPos;
+        }
+
+        return ballTransform.position;
+    }
+
+    private Vector3 BumperCollision(Transform ballTransform)
+    {
+        ForceDelta = 1.5f;
+        
+        foreach (var bumper in Cylinders)
+        {
+            Vector3 tempBallPos = ballTransform.position;
+
+            Transform bumperTransform = bumper.transform;
+            
+            float bumperRadius = bumperTransform.localScale.x / 2;
+            float dist = Vector3.Distance(bumperTransform.position, tempBallPos);
+
+            if (!(dist < BallRadius + bumperRadius)) continue;
+            
+            tempBallPos -= VectorSpeed * Time.deltaTime;
+                
+            for (int i = 0; i < FramesCut; i++)
+            {
+                tempBallPos += i / FramesCut * VectorSpeed * Time.deltaTime;
+                dist = Vector3.Distance(bumperTransform.position, ballTransform.position);
+                    
+                if (dist < BallRadius + bumperRadius)
+                {
+                    break;
+                }
+            }
+                
+            Vector3 CylinderBall = ballTransform.position - bumperTransform.position;
+            Vector3 perpendicular = CylinderBall * Vector3.Dot(VectorSpeed, CylinderBall);
+            Vector3 parallel = VectorSpeed - perpendicular;
+                
+            VectorSpeed = parallel * ForceDelta - perpendicular * ForceDelta;
+
+            return tempBallPos;
+        }
+
+        return ballTransform.position;
+    }
+
+    private Vector3 FlipperCollision(Transform ballTransform)
+    {
+        foreach (var flipper in FlippersCol)
+        {
+            Transform flipperTransform = flipper.transform;
+
+            float flipperRadiusX = flipperTransform.localScale.x / 2;
+            float flipperRadiusY = flipperTransform.localScale.y / 2;
+            float flipperRadiusZ = flipperTransform.localScale.z / 2;
+
+            Vector3 tempBallPos = ballTransform.position;
+            Vector3 normalFlipper = flipperTransform.up;
+            Vector3 vectorFlipperBall = tempBallPos - flipperTransform.position - flipperTransform.up * flipperRadiusY;
+
+            if (!(Mathf.Abs(Vector3.Dot(vectorFlipperBall, normalFlipper)) < BallRadius) ||
+                !(Mathf.Abs(Vector3.Dot(vectorFlipperBall, flipperTransform.right)) < flipperRadiusX + BallRadius) ||
+                !(Mathf.Abs(Vector3.Dot(vectorFlipperBall, flipperTransform.forward)) < flipperRadiusZ + BallRadius)) continue;
+            
+            tempBallPos -= VectorSpeed * Time.deltaTime;
+                
+            for (int i = 0; i < FramesCut; i++)
+            {
+                tempBallPos += i / FramesCut * VectorSpeed * Time.deltaTime;
+                vectorFlipperBall = tempBallPos - flipperTransform.position - flipperTransform.up * flipperRadiusY;
+                
+                if (Mathf.Abs(Vector3.Dot(vectorFlipperBall, normalFlipper)) < BallRadius)
+                {
+                    break;
+                }
+            }
+                
+            Vector3 perpendicular= normalFlipper * Vector3.Dot(VectorSpeed, normalFlipper);
+            Vector3 parallel = VectorSpeed - perpendicular;
+                
+            VectorSpeed = parallel - perpendicular;
+            
+            return tempBallPos;
+        }
+
+        return ballTransform.position;
+    }
 }
