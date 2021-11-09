@@ -6,9 +6,12 @@ using UnityEngine.Serialization;
 
 public class Collision : MonoBehaviour
 {
+<<<<<<< Updated upstream
     public static Collision Instance;
     
+=======
     public Vector3 VectorSpeed;
+>>>>>>> Stashed changes
     private Transform BallTransform;
     
     private float Tleft;
@@ -45,6 +48,7 @@ public class Collision : MonoBehaviour
     
     [SerializeField]
     private Transform[] FlippersCol;
+<<<<<<< Updated upstream
     
     [HideInInspector]
     public Vector3 VectorSpeed;
@@ -57,9 +61,11 @@ public class Collision : MonoBehaviour
         
         Instance = this;
     }
+=======
 
     [SerializeField]
     private float[] FlipPower;
+>>>>>>> Stashed changes
 
     // Start is called before the first frame update
     void Start()
@@ -91,8 +97,11 @@ public class Collision : MonoBehaviour
 
     private void FlipperInput()
     {
+<<<<<<< Updated upstream
+=======
         float OldTleft;
         float OldTright;
+>>>>>>> Stashed changes
         if (Input.GetButton("FlipperLeft"))
         {
             OldTleft = Tleft;
