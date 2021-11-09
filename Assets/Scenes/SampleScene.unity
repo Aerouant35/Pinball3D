@@ -590,7 +590,7 @@ GameObject:
   - component: {fileID: 389325041}
   m_Layer: 0
   m_Name: FlipR
-  m_TagString: Untagged
+  m_TagString: Right
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -780,7 +780,7 @@ GameObject:
   - component: {fileID: 519232297}
   m_Layer: 0
   m_Name: FlipL
-  m_TagString: Untagged
+  m_TagString: Left
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -893,11 +893,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5cb052474ebf47c4aa7918ddc0a03683, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LaunchPower: 0
-  InitPos: {x: 0, y: 0, z: 0}
   LaunchPowerUI: {fileID: 147909077}
   Ball: {fileID: 2044611406}
-  colscript: {fileID: 0}
 --- !u!65 &548143459
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2193,7 +2190,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2044611406}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.26, y: -0.5, z: 2.63}
+  m_LocalPosition: {x: -0.13, y: 0.5, z: 8.17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -2211,26 +2208,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 835e73828aae87f4eb41b6d352c02427, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  VectorSpeed: {x: 0, y: 0, z: 0}
   acceleration: -9.81
   speedRotation: 5
   angleFlippers: 35
   Planes:
-  - {fileID: 99816755}
+  - {fileID: 99816759}
   Cylinders:
-  - {fileID: 328768254}
+  - {fileID: 328768258}
   Walls:
-  - {fileID: 1448233363}
-  - {fileID: 1403909390}
-  - {fileID: 162941657}
-  - {fileID: 1472776625}
-  - {fileID: 884601361}
-  - {fileID: 1297318937}
-  - {fileID: 1403920497}
-  - {fileID: 1403920497}
+  - {fileID: 1403909394}
+  - {fileID: 162941661}
+  - {fileID: 1472776629}
+  - {fileID: 884601365}
+  - {fileID: 1297318941}
+  - {fileID: 1403920501}
+  - {fileID: 1448233364}
   Flippers:
-  - {fileID: 519232295}
-  - {fileID: 389325039}
-  FlippersCol: []
+  - {fileID: 2117592972}
+  - {fileID: 1660016253}
+  FlippersCol:
+  - {fileID: 519232296}
+  - {fileID: 389325040}
+  FlipPower:
+  - 0
+  - 0
 --- !u!1 &2103886120
 GameObject:
   m_ObjectHideFlags: 0

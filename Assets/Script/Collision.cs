@@ -8,6 +8,7 @@ public class Collision : MonoBehaviour
 {
     public static Collision Instance;
     
+    public Vector3 VectorSpeed;
     private Transform BallTransform;
     
     private float Tleft;
@@ -57,6 +58,9 @@ public class Collision : MonoBehaviour
         Instance = this;
     }
 
+    [SerializeField]
+    private float[] FlipPower;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -87,26 +91,36 @@ public class Collision : MonoBehaviour
 
     private void FlipperInput()
     {
+        float OldTleft;
+        float OldTright;
         if (Input.GetButton("FlipperLeft"))
         {
+            OldTleft = Tleft;
             Tleft += speedRotation * Time.deltaTime;
             Tleft = Mathf.Min(1, Tleft);
+            FlipPower[0] = Tleft - OldTleft;
         }
         else
         {
+            OldTleft = Tleft;
             Tleft -= speedRotation * Time.deltaTime;
             Tleft = Mathf.Max(0, Tleft);
+            FlipPower[0] = Tleft - OldTleft;
         }
         
         if (Input.GetButton("FlipperRight"))
         {
+            OldTright = TRight;
             TRight += speedRotation * Time.deltaTime;
             TRight = Mathf.Min(1, TRight);
+            FlipPower[1] = TRight - OldTright;
         }
         else
         {
+            OldTright = TRight;
             TRight -= speedRotation * Time.deltaTime;
             TRight = Mathf.Max(0, TRight);
+            FlipPower[1] = TRight - OldTright;
         }
         
         Debug.Log(Tleft);
@@ -165,7 +179,8 @@ public class Collision : MonoBehaviour
                     break;
                 }
             }
-            
+
+            gameObject.transform.position += Mathf.Abs(Vector3.Dot(vectorWallBall, normalWall)) * normalWall;
             Vector3 perpendicular= normalWall * Vector3.Dot(VectorSpeed, normalWall);
             Vector3 parallel = VectorSpeed - perpendicular;
             
@@ -250,9 +265,22 @@ public class Collision : MonoBehaviour
                 
             Vector3 perpendicular= normalFlipper * Vector3.Dot(VectorSpeed, normalFlipper);
             Vector3 parallel = VectorSpeed - perpendicular;
-                
-            VectorSpeed = parallel - perpendicular;
-            
+            int index = 0;
+            if (flipper.gameObject.CompareTag("Left"))
+            {
+                index = 0;
+            }
+            else
+            {
+                index = 1;
+            }
+            VectorSpeed = parallel - perpendicular 
+                          + normalFlipper *(1+FlipPower[index]) // le 1 correspond à rien mais est nécessaire
+                                          *8 // modulateur de vitesse du flipper
+                                          *(1+           // le 1 correspond à rien mais est nécessaire
+                                            (1-2*index)  // calcul pour avoir le bon sens selon le flipper gauche ou droit
+                                          * Vector3.Dot(vectorFlipperBall, flipperTransform.right)/(flipperRadiusX + BallRadius));
+
             return tempBallPos;
         }
 
