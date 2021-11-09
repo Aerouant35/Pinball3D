@@ -32,7 +32,7 @@ public class BallLauncher : MonoBehaviour
         {
             if (Ball.transform.position.x>5)
             {
-                colscript.speed.z += LaunchPower * 15;
+                colscript.VectorSpeed.z += LaunchPower * 15;
             }
             
             LaunchPower = 0;
