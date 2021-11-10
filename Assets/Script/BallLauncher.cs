@@ -48,9 +48,9 @@ public class BallLauncher : MonoBehaviour
 
         if (Input.GetButtonUp("Launcher"))
         {
-            if (Collision.Instance.transform.position.x > posThreshold)
+            if (Ball.Instance.transform.position.x > posThreshold)
             {
-                Collision.Instance.VectorSpeed.z += LaunchPower * deltaForce;
+                Ball.Instance.VectorSpeed.z += LaunchPower * deltaForce;
             }
             
             launchPowerUI.value = LaunchPower = 0;

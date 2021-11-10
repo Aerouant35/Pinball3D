@@ -4,34 +4,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class Collision : MonoBehaviour
+public class Ball : MonoBehaviour
 {
-
-    public static Collision Instance;
+    public static Ball Instance;
     
-
-
     private Transform BallTransform;
-    
-    private float Tleft;
-    private float TRight;
     
     private float BallRadius;
     private float ForceDelta = 0.5f;
     
     private int FramesCut = 1000;
     private int Width = 5;
-
-    [Header("Parameters")]
-    [SerializeField]
-    private float acceleration = -9.81f;
     
-    [SerializeField]
-    private float speedRotation = 5;
-    
-    [SerializeField]
-    private float angleFlippers = 35;
-
     [Header("Entities")]
     [SerializeField]
     private List<Transform> Planes;
@@ -43,11 +27,7 @@ public class Collision : MonoBehaviour
     private List<Transform> Walls;
     
     [SerializeField]
-    private List<Transform> Flippers;
-    
-    [SerializeField]
     private Transform[] FlippersCol;
-
     
     [HideInInspector]
     public Vector3 VectorSpeed;
@@ -61,11 +41,6 @@ public class Collision : MonoBehaviour
         Instance = this;
     }
 
-
-    [SerializeField]
-    private float[] FlipPower;
-
-
     // Start is called before the first frame update
     void Start()
     {
@@ -73,16 +48,12 @@ public class Collision : MonoBehaviour
         BallRadius = BallTransform.localScale.x / 2;
         
         VectorSpeed = Vector3.zero;
-        Tleft = 0f;
-        TRight = 0f;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        VectorSpeed.y += acceleration * Time.deltaTime;
-
-        FlipperInput();
+        VectorSpeed.y += -GameManager.Instance.Gravity * Time.deltaTime;
         
         PlaneCollision(BallTransform);
         BallTransform.position = WallCollision(BallTransform);
@@ -94,48 +65,6 @@ public class Collision : MonoBehaviour
         transform.position += VectorSpeed * Time.deltaTime;
     }
 
-    private void FlipperInput()
-    {
-
-        float OldTleft;
-        float OldTright;
-
-        if (Input.GetButton("FlipperLeft"))
-        {
-            OldTleft = Tleft;
-            Tleft += speedRotation * Time.deltaTime;
-            Tleft = Mathf.Min(1, Tleft);
-            FlipPower[0] = Tleft - OldTleft;
-        }
-        else
-        {
-            OldTleft = Tleft;
-            Tleft -= speedRotation * Time.deltaTime;
-            Tleft = Mathf.Max(0, Tleft);
-            FlipPower[0] = Tleft - OldTleft;
-        }
-        
-        if (Input.GetButton("FlipperRight"))
-        {
-            OldTright = TRight;
-            TRight += speedRotation * Time.deltaTime;
-            TRight = Mathf.Min(1, TRight);
-            FlipPower[1] = TRight - OldTright;
-        }
-        else
-        {
-            OldTright = TRight;
-            TRight -= speedRotation * Time.deltaTime;
-            TRight = Mathf.Max(0, TRight);
-            FlipPower[1] = TRight - OldTright;
-        }
-        
-        Debug.Log(Tleft);
-        
-        Flippers[0].localEulerAngles = new Vector3(0, Mathf.Lerp(angleFlippers, -angleFlippers,Tleft),0);
-        Flippers[1].localEulerAngles = new Vector3(0, Mathf.Lerp(-angleFlippers, angleFlippers, TRight),0);
-    }
-    
     private void PlaneCollision(Transform ballTransform)
     {
         ForceDelta = 0.5f;
@@ -282,7 +211,7 @@ public class Collision : MonoBehaviour
                 index = 1;
             }
             VectorSpeed = parallel - perpendicular 
-                          + normalFlipper *(1+FlipPower[index]) // le 1 correspond à rien mais est nécessaire
+                          + normalFlipper *(1+ GameManager.Instance.flipPower[index]) // le 1 correspond à rien mais est nécessaire
                                           *8 // modulateur de vitesse du flipper
                                           *(1+           // le 1 correspond à rien mais est nécessaire
                                             (1-2*index)  // calcul pour avoir le bon sens selon le flipper gauche ou droit

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,8 +11,14 @@ public class GameManager : MonoBehaviour
     
     public readonly float Gravity = 9.81f;
     
-    public Collision Ball { get; private set; }
+    public Ball Ball { get; private set; }
     private int BallRemaining;
+    
+    private float TLeft;
+    private float TRight;
+    
+    [HideInInspector]
+    public float[] flipPower = new float[2];
 
     // [SerializeField] private Text _startText;
     // [SerializeField] private Text _spaceText;
@@ -27,6 +34,12 @@ public class GameManager : MonoBehaviour
     [Header("Flippers")]
     [SerializeField] private Transform flipperLeft;
     [SerializeField] private Transform flipperRight;
+    
+    [SerializeField]
+    private float speedRotation = 5;
+    
+    [SerializeField]
+    private float angleFlippers = 35;
 
     // [SerializeField] private int[] flippersAngleOrigin = new int[2];
     // [SerializeField] private int[] flippersAngleMax = new int[2];
@@ -51,6 +64,8 @@ public class GameManager : MonoBehaviour
         {
             InitGame();
         }
+        
+        FlipperInput();
         
         // flipperLeft.eulerAngles = new Vector3(flipperLeft.eulerAngles.x, flipperLeft.eulerAngles.y, Input.GetKey(KeyCode.Q) || 
         //     Input.GetKey(KeyCode.LeftArrow) ? flippersAngleMax[0] : flippersAngleOrigin[0]);
@@ -77,7 +92,7 @@ public class GameManager : MonoBehaviour
 
     void SpawnBall()
     {
-        Ball = Instantiate(ballObject, ballSpawner.position, Quaternion.identity).GetComponent<Collision>();
+        Ball = Instantiate(ballObject, ballSpawner.position, Quaternion.identity).GetComponent<Ball>();
     }
 
     void EndGame()
@@ -96,5 +111,44 @@ public class GameManager : MonoBehaviour
 
         if (BallRemaining <= 0) EndGame();
         else SpawnBall();
+    }
+    
+    private void FlipperInput()
+    {
+        float tempTLeft;
+        float tempTRight;
+
+        if (Input.GetButton("FlipperLeft"))
+        {
+            tempTLeft = TLeft;
+            TLeft += speedRotation * Time.deltaTime;
+            TLeft = Mathf.Min(1, TLeft);
+            flipPower[0] = TLeft - tempTLeft;
+        }
+        else
+        {
+            tempTLeft = TLeft;
+            TLeft -= speedRotation * Time.deltaTime;
+            TLeft = Mathf.Max(0, TLeft);
+            flipPower[0] = TLeft - tempTLeft;
+        }
+        
+        if (Input.GetButton("FlipperRight"))
+        {
+            tempTRight = TRight;
+            TRight += speedRotation * Time.deltaTime;
+            TRight = Mathf.Min(1, TRight);
+            flipPower[1] = TRight - tempTRight;
+        }
+        else
+        {
+            tempTRight = TRight;
+            TRight -= speedRotation * Time.deltaTime;
+            TRight = Mathf.Max(0, TRight);
+            flipPower[1] = TRight - tempTRight;
+        }
+        
+        flipperLeft.localEulerAngles = new Vector3(flipperLeft.localEulerAngles.x, Mathf.Lerp(angleFlippers, -angleFlippers,TLeft), flipperLeft.localEulerAngles.z);
+        flipperRight.localEulerAngles = new Vector3(flipperRight.localEulerAngles.x, Mathf.Lerp(-angleFlippers, angleFlippers, TRight), flipperRight.localEulerAngles.z);
     }
 }
