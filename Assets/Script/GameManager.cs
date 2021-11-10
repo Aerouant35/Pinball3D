@@ -147,8 +147,10 @@ public class GameManager : MonoBehaviour
             TRight = Mathf.Max(0, TRight);
             flipPower[1] = TRight - tempTRight;
         }
-        
+        Debug.Log(flipPower[0]);
+        Debug.Log(flipPower[1]);
         flipperLeft.localEulerAngles = new Vector3(flipperLeft.localEulerAngles.x, Mathf.Lerp(angleFlippers, -angleFlippers,TLeft), flipperLeft.localEulerAngles.z);
         flipperRight.localEulerAngles = new Vector3(flipperRight.localEulerAngles.x, Mathf.Lerp(-angleFlippers, angleFlippers, TRight), flipperRight.localEulerAngles.z);
     }
 }
+ 
