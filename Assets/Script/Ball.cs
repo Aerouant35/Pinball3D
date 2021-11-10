@@ -11,6 +11,7 @@ public class Ball : MonoBehaviour
     private Transform BallTransform;
     
     private float BallRadius;
+    [SerializeField]
     private float ForceDelta = 0.5f;
     
     private int FramesCut = 1000;
@@ -48,7 +49,10 @@ public class Ball : MonoBehaviour
         BallTransform.position = FlipperCollision(BallTransform);
 
         transform.position = BallTransform.position;
-        
+        if (VectorSpeed.magnitude*Time.deltaTime > 2*BallRadius)
+        {
+            //VectorSpeed *=2 * BallRadius / VectorSpeed.magnitude*Time.deltaTime ;
+        }
         transform.position += VectorSpeed * Time.deltaTime;
     }
 
@@ -71,6 +75,7 @@ public class Ball : MonoBehaviour
             Vector3 parallel = VectorSpeed - perpendicular;
                 
             VectorSpeed = parallel - perpendicular * ForceDelta;
+
         }
     }
 
@@ -117,7 +122,7 @@ public class Ball : MonoBehaviour
 
     private Vector3 BumperCollision(Transform ballTransform)
     {
-        ForceDelta = 1.5f;
+        ForceDelta = 1f;
         
         foreach (var bumper in EntityManager.Instance.bumpers)
         {
@@ -126,16 +131,22 @@ public class Ball : MonoBehaviour
             Transform bumperTransform = bumper.transform;
             
             float bumperRadius = bumperTransform.localScale.x / 2;
-            float dist = Vector3.Distance(bumperTransform.position, tempBallPos);
+            Vector3 ballCyllinder = ballTransform.position - bumperTransform.position;
+            Vector3 normal = ballCyllinder - (Vector3.Dot(ballCyllinder, bumperTransform.up) * bumperTransform.up);
 
+
+            float dist = Vector3.Magnitude(normal);
             if (!(dist < BallRadius + bumperRadius)) continue;
             
             tempBallPos -= VectorSpeed * Time.deltaTime;
                 
             for (int i = 0; i < FramesCut; i++)
             {
-                tempBallPos += i / FramesCut * VectorSpeed * Time.deltaTime;
-                dist = Vector3.Distance(bumperTransform.position, ballTransform.position);
+                tempBallPos += 1 / FramesCut * VectorSpeed * Time.deltaTime;
+                ballCyllinder =ballTransform.position - bumperTransform.position;
+                normal =  ballCyllinder - (Vector3.Dot(ballCyllinder, bumperTransform.up) * bumperTransform.up);
+                    
+                dist = Vector3.Magnitude(normal);
                     
                 if (dist < BallRadius + bumperRadius)
                 {
@@ -143,11 +154,11 @@ public class Ball : MonoBehaviour
                 }
             }
                 
-            Vector3 CylinderBall = ballTransform.position - bumperTransform.position;
-            Vector3 perpendicular = CylinderBall * Vector3.Dot(VectorSpeed, CylinderBall);
+            gameObject.transform.position += 10*Mathf.Abs(BallRadius + bumperRadius-dist) * normal.normalized;
+            Vector3 perpendicular = normal.normalized * Vector3.Dot(VectorSpeed, normal.normalized);
             Vector3 parallel = VectorSpeed - perpendicular;
                 
-            VectorSpeed = parallel * ForceDelta - perpendicular * ForceDelta;
+            VectorSpeed = parallel  - perpendicular  + ForceDelta*normal.normalized ;
 
             return tempBallPos;
         }
@@ -165,11 +176,20 @@ public class Ball : MonoBehaviour
             float flipperRadiusY = flipperTransform.localScale.y / 2;
             float flipperRadiusZ = flipperTransform.localScale.z / 2;
 
+            int index = 0;
+            if (flipper.gameObject.CompareTag("Left"))
+            {
+                index = 0;
+            }
+            else
+            {
+                index = 1;
+            }
             Vector3 tempBallPos = ballTransform.position;
             Vector3 normalFlipper = flipperTransform.up;
             Vector3 vectorFlipperBall = tempBallPos - flipperTransform.position - flipperTransform.up * flipperRadiusY;
 
-            if (!(Mathf.Abs(Vector3.Dot(vectorFlipperBall, normalFlipper)) < BallRadius) ||
+            if (!(Mathf.Abs(Vector3.Dot(vectorFlipperBall, normalFlipper)) < BallRadius * (1+10*Mathf.Abs(GameManager.Instance.flipPower[index]))) ||
                 !(Mathf.Abs(Vector3.Dot(vectorFlipperBall, flipperTransform.right)) < flipperRadiusX + BallRadius) ||
                 !(Mathf.Abs(Vector3.Dot(vectorFlipperBall, flipperTransform.forward)) < flipperRadiusZ + BallRadius)) continue;
             
@@ -185,24 +205,14 @@ public class Ball : MonoBehaviour
                     break;
                 }
             }
-                
+
+            gameObject.transform.position += 6*Mathf.Abs(Vector3.Dot(vectorFlipperBall, normalFlipper)+100*Mathf.Abs(GameManager.Instance.flipPower[index])) * normalFlipper;
+            
             Vector3 perpendicular= normalFlipper * Vector3.Dot(VectorSpeed, normalFlipper);
             Vector3 parallel = VectorSpeed - perpendicular;
-            int index = 0;
-            if (flipper.gameObject.CompareTag("Left"))
-            {
-                index = 0;
-            }
-            else
-            {
-                index = 1;
-            }
+
             VectorSpeed = parallel - perpendicular 
-                          + normalFlipper *(1+ GameManager.Instance.flipPower[index]) // le 1 correspond à rien mais est nécessaire
-                                          *8 // modulateur de vitesse du flipper
-                                          *(1+           // le 1 correspond à rien mais est nécessaire
-                                            (1-2*index)  // calcul pour avoir le bon sens selon le flipper gauche ou droit
-                                          * Vector3.Dot(vectorFlipperBall, flipperTransform.right)/(flipperRadiusX + BallRadius));
+                          + normalFlipper *Mathf.Max(0, GameManager.Instance.flipPower[index] *500) *(1+0.5f+Vector3.Dot(vectorFlipperBall, flipperTransform.right)/(flipperRadiusX + BallRadius));
 
             return tempBallPos;
         }
