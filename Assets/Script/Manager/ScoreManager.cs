@@ -7,8 +7,6 @@ public class ScoreManager : MonoBehaviour
 {
     public static ScoreManager Instance;
     
-    public Text scoreDisplayer;
-
     [SerializeField] 
     private Text[] leaderboard;
 
@@ -17,15 +15,15 @@ public class ScoreManager : MonoBehaviour
     private int HighScore1;
     private int HighScore2;
     private int HighScore3;
-    
+
+    private bool created;
+
     private void Awake()
     {
-        if (!ReferenceEquals(Instance, null))
-            DestroyImmediate(this);
-        else
-            Instance = this;
+        if (!ReferenceEquals(Instance, null)) return;
         
-        DontDestroyOnLoad(gameObject);
+        Instance = this;
+        DontDestroyOnLoad(this);
     }
 
     private void Start()
@@ -79,6 +77,6 @@ public class ScoreManager : MonoBehaviour
     public void AddScore(int score)
     {
         CurrentScore += score;
-        GameManager.Instance.ScoreDisplayer = CurrentScore.ToString();
+        UIManager.Instance.inGamePanel.ScoreDisplayer = CurrentScore.ToString();
     }
 }

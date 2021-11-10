@@ -22,15 +22,6 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public float[] flipPower = new float[2];
     
-    [Header("UI")]
-    [SerializeField] private Text scoreDisplayer;
-    public string ScoreDisplayer
-    {
-        set => scoreDisplayer.text = value;
-    }
-
-    [SerializeField] private Text ballText;
-
     [Header("Ball")]
     [SerializeField] private int ballMax;
 
@@ -55,13 +46,14 @@ public class GameManager : MonoBehaviour
     {
         if (!ReferenceEquals(Instance, null))
             DestroyImmediate(Instance);
-        else
-            Instance = this;
-        
+
+        Instance = this;
     }
 
     private void Start()
     {
+        Time.timeScale = 1;
+
         if (ReferenceEquals(Ball, null))
             InitGame();        
     }
@@ -69,13 +61,8 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            #if UNITY_EDITOR
-                        UnityEditor.EditorApplication.isPlaying = false;
-            #endif
-                        Application.Quit();
-        }
-        
+            PauseGame();
+
         FlipperInput();
         
         // flipperLeft.eulerAngles = new Vector3(flipperLeft.eulerAngles.x, flipperLeft.eulerAngles.y, Input.GetKey(KeyCode.Q) || 
@@ -90,10 +77,10 @@ public class GameManager : MonoBehaviour
     void InitGame()
     {
         BallRemaining = ballMax;
-        ballText.text = BallRemaining.ToString();
         
-        scoreDisplayer.text = "0";
-        
+        UIManager.Instance.inGamePanel.BallText = BallRemaining.ToString();
+        UIManager.Instance.inGamePanel.ScoreDisplayer = "0";
+
         SpawnBall();
     }
 
@@ -105,19 +92,35 @@ public class GameManager : MonoBehaviour
     void EndGame()
     {
         Ball = null;
-        ballText.text = "0";
+        UIManager.Instance.inGamePanel.BallText = "0";
         ScoreManager.Instance.SaveHighScore();
     }
 
     public void MinusBall(int ball)
     {
         BallRemaining -= ball;
-        ballText.text = BallRemaining.ToString();
+        UIManager.Instance.inGamePanel.BallText = BallRemaining.ToString();
 
         DestroyImmediate(Ball.gameObject);
 
         if (BallRemaining <= 0) EndGame();
         else SpawnBall();
+    }
+
+    void PauseGame()
+    {
+        Time.timeScale = 0;
+
+        UIManager.Instance.inGamePanel.gameObject.SetActive(false);
+        UIManager.Instance.pausePanel.gameObject.SetActive(true);
+    }
+
+    public void ResumeGame()
+    {
+        Time.timeScale = 1;
+        
+        UIManager.Instance.inGamePanel.gameObject.SetActive(true);
+        UIManager.Instance.pausePanel.gameObject.SetActive(false);
     }
     
     private void FlipperInput()
