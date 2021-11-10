@@ -16,19 +16,6 @@ public class Ball : MonoBehaviour
     private int FramesCut = 1000;
     private int Width = 5;
     
-    [Header("Entities")]
-    [SerializeField]
-    private List<Transform> Planes;
-    
-    [SerializeField]
-    private List<Transform> Cylinders;
-    
-    [SerializeField]
-    private List<Transform> Walls;
-    
-    [SerializeField]
-    private Transform[] FlippersCol;
-    
     [HideInInspector]
     public Vector3 VectorSpeed;
 
@@ -53,7 +40,7 @@ public class Ball : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        VectorSpeed.y += -GameManager.Instance.Gravity * Time.deltaTime;
+        VectorSpeed.y -= GameManager.Gravity * Time.deltaTime;
         
         PlaneCollision(BallTransform);
         BallTransform.position = WallCollision(BallTransform);
@@ -69,7 +56,7 @@ public class Ball : MonoBehaviour
     {
         ForceDelta = 0.5f;
         
-        foreach (var plane in Planes)
+        foreach (var plane in EntityManager.Instance.planes)
         {
             Transform planeTrans = plane.transform;
             
@@ -91,7 +78,7 @@ public class Ball : MonoBehaviour
     {
         ForceDelta = 0.9f;
         
-        foreach (var wall in Walls)
+        foreach (var wall in EntityManager.Instance.walls)
         {
             Transform wallTrans = wall.transform;
 
@@ -132,7 +119,7 @@ public class Ball : MonoBehaviour
     {
         ForceDelta = 1.5f;
         
-        foreach (var bumper in Cylinders)
+        foreach (var bumper in EntityManager.Instance.bumpers)
         {
             Vector3 tempBallPos = ballTransform.position;
 
@@ -170,7 +157,7 @@ public class Ball : MonoBehaviour
 
     private Vector3 FlipperCollision(Transform ballTransform)
     {
-        foreach (var flipper in FlippersCol)
+        foreach (var flipper in EntityManager.Instance.flippersCol)
         {
             Transform flipperTransform = flipper.transform;
 

@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,7 +11,7 @@ public class GameManager : MonoBehaviour
 
     public static GameManager Instance;
     
-    public readonly float Gravity = 9.81f;
+    public const float Gravity = 9.81f;
     
     public Ball Ball { get; private set; }
     private int BallRemaining;
@@ -19,15 +21,19 @@ public class GameManager : MonoBehaviour
     
     [HideInInspector]
     public float[] flipPower = new float[2];
-
-    // [SerializeField] private Text _startText;
-    // [SerializeField] private Text _spaceText;
     
+    [Header("UI")]
+    [SerializeField] private Text scoreDisplayer;
+    public string ScoreDisplayer
+    {
+        set => scoreDisplayer.text = value;
+    }
+
+    [SerializeField] private Text ballText;
+
     [Header("Ball")]
     [SerializeField] private int ballMax;
 
-    // [SerializeField] private Text _ballText;
-    
     [SerializeField] private GameObject ballObject;
     [SerializeField] private Transform ballSpawner;
     
@@ -51,18 +57,23 @@ public class GameManager : MonoBehaviour
             DestroyImmediate(Instance);
         else
             Instance = this;
+        
     }
-    
+
+    private void Start()
+    {
+        if (ReferenceEquals(Ball, null))
+            InitGame();        
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            Application.Quit();
-        }
-        
-        if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) && ReferenceEquals(Ball, null))
-        {
-            InitGame();
+            #if UNITY_EDITOR
+                        UnityEditor.EditorApplication.isPlaying = false;
+            #endif
+                        Application.Quit();
         }
         
         FlipperInput();
@@ -74,18 +85,14 @@ public class GameManager : MonoBehaviour
         //     Input.GetKey(KeyCode.RightArrow) ? flippersAngleMax[1] : flippersAngleOrigin[1]);
 
         if (ReferenceEquals(Ball, null) && BallRemaining <= 0 ) return;
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            //if (_spaceText.enabled) _spaceText.enabled = false;
-            //Ball.BallStart(_ballSpeedY);
-        }
     }
     
     void InitGame()
     {
         BallRemaining = ballMax;
-        //ScoreManager.Instance.ScoreDisplayer.text = "0";
+        ballText.text = BallRemaining.ToString();
+        
+        scoreDisplayer.text = "0";
         
         SpawnBall();
     }
@@ -98,14 +105,14 @@ public class GameManager : MonoBehaviour
     void EndGame()
     {
         Ball = null;
-        //_ballText.text = "0";
-        //ScoreManager.Instance.SaveHighScore();
+        ballText.text = "0";
+        ScoreManager.Instance.SaveHighScore();
     }
 
     public void MinusBall(int ball)
     {
         BallRemaining -= ball;
-        //_ballText.text = ballRemaining.ToString();
+        ballText.text = BallRemaining.ToString();
 
         DestroyImmediate(Ball.gameObject);
 
