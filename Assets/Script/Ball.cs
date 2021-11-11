@@ -33,7 +33,7 @@ public class Ball : MonoBehaviour
     void Start()
     {
         BallTransform = transform;
-        BallRadius = BallTransform.localScale.x / 2;
+        BallRadius = BallTransform.localScale.x /*/ 2*/;
         
         VectorSpeed = Vector3.zero;
     }
@@ -158,8 +158,10 @@ public class Ball : MonoBehaviour
             Vector3 perpendicular = normal.normalized * Vector3.Dot(VectorSpeed, normal.normalized);
             Vector3 parallel = VectorSpeed - perpendicular;
                 
-            VectorSpeed = parallel  - perpendicular  + ForceDelta*normal.normalized ;
-
+            VectorSpeed = parallel  - perpendicular  + ForceDelta*normal.normalized;
+            
+            ScoreManager.Instance.AddScore(EntityManager.Instance.bumperScore);
+                
             return tempBallPos;
         }
 

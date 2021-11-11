@@ -94,6 +94,7 @@ public class GameManager : MonoBehaviour
         Ball = null;
         UIManager.Instance.inGamePanel.BallText = "0";
         ScoreManager.Instance.SaveHighScore();
+        UIManager.Instance.gameOverPanel.gameObject.SetActive(true);
     }
 
     public void MinusBall(int ball)

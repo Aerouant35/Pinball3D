@@ -11,6 +11,9 @@ public class UIManager : MonoBehaviour
     
     [HideInInspector]
     public PinballUI inGamePanel;
+    
+    [HideInInspector]
+    public GameOverUI gameOverPanel;
 
     private void Awake()
     {
@@ -21,12 +24,16 @@ public class UIManager : MonoBehaviour
         
         pausePanel = FindObjectOfType<PauseGame>();
         inGamePanel = FindObjectOfType<PinballUI>();
+        gameOverPanel = FindObjectOfType<GameOverUI>();
     }
     
     // Start is called before the first frame update
     void Start()
     {
+        gameOverPanel.gameObject.SetActive(false);
+        
         pausePanel.gameObject.SetActive(false);
+        
         inGamePanel.gameObject.SetActive(true);
     }
 }
