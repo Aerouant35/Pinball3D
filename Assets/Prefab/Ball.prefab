@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 8543128702538940508}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.13, y: 0.5, z: 8.17}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -108,28 +108,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 835e73828aae87f4eb41b6d352c02427, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  acceleration: -9.81
-  speedRotation: 5
-  angleFlippers: 35
-  Planes:
-  - {fileID: 0}
-  Cylinders:
-  - {fileID: 0}
-  Walls:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  Flippers:
-  - {fileID: 0}
-  - {fileID: 0}
-  FlippersCol:
-  - {fileID: 0}
-  - {fileID: 0}
+  ForceDelta: 0.5
   VectorSpeed: {x: 0, y: 0, z: 0}
-  FlipPower:
-  - 0
-  - 0
