@@ -51,7 +51,7 @@ public class Ball : MonoBehaviour
         transform.position = BallTransform.position;
         if (VectorSpeed.magnitude*Time.fixedDeltaTime > 2*BallRadius)
         {
-            //VectorSpeed *=2 * BallRadius / VectorSpeed.magnitude*Time.deltaTime ;
+            VectorSpeed *=2 * BallRadius / VectorSpeed.magnitude*Time.fixedDeltaTime ;
         }
         transform.position += VectorSpeed * Time.fixedDeltaTime;
     }
@@ -175,7 +175,7 @@ public class Ball : MonoBehaviour
                 }
             }
                 
-            gameObject.transform.position += 5f*Mathf.Abs(BallRadius + bumperRadius) * normal.normalized;
+            gameObject.transform.position += 6f*Mathf.Abs(BallRadius + bumperRadius) * normal.normalized;
             Vector3 perpendicular = normal.normalized * Vector3.Dot(VectorSpeed, normal.normalized);
             Vector3 parallel = VectorSpeed - perpendicular;
                 
