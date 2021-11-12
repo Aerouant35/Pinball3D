@@ -47,13 +47,16 @@ public class Ball : MonoBehaviour
         BallTransform.position = WallCollision(BallTransform);
         BallTransform.position = BumperCollision(BallTransform);
         BallTransform.position = FlipperCollision(BallTransform);
-        TriggerBox(BallTransform);
+        
         transform.position = BallTransform.position;
+        
         if (VectorSpeed.magnitude*Time.fixedDeltaTime > 2*BallRadius)
         {
             VectorSpeed *=2 * BallRadius / VectorSpeed.magnitude*Time.fixedDeltaTime ;
         }
         transform.position += VectorSpeed * Time.fixedDeltaTime;
+        
+        TriggerBox(BallTransform);
     }
 
     private void PlaneCollision(Transform ballTransform)
@@ -181,6 +184,8 @@ public class Ball : MonoBehaviour
                 
             VectorSpeed = parallel  - perpendicular  + ForceDelta*normal.normalized ;
 
+            ScoreManager.Instance.AddScore(EntityManager.Instance.bumperScore);
+            
             return tempBallPos;
         }
 
