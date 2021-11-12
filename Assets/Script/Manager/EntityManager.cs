@@ -10,6 +10,7 @@ public class EntityManager : MonoBehaviour
     public List<Transform> bumpers;
     public List<Transform> walls;
     public List<Transform> flippersCol;
+    public List<Transform> triggerBox;
 
     public int bumperScore = 10;
     

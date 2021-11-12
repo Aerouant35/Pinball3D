@@ -48,6 +48,8 @@ public class Ball : MonoBehaviour
         BallTransform.position = BumperCollision(BallTransform);
         BallTransform.position = FlipperCollision(BallTransform);
 
+        TriggerBox(BallTransform);
+
         transform.position = BallTransform.position;
         if (VectorSpeed.magnitude*Time.deltaTime > 2*BallRadius)
         {
@@ -220,5 +222,19 @@ public class Ball : MonoBehaviour
         }
 
         return ballTransform.position;
+    }
+    
+    private void TriggerBox(Transform ball)
+    {
+        foreach (var trigger in EntityManager.Instance.triggerBox)
+        {
+            var vectorWallBall = ball.position - trigger.position;
+
+            if (!(Mathf.Abs(Vector3.Dot(vectorWallBall, trigger.up)) < trigger.localScale.y + BallRadius &&
+                  Mathf.Abs(Vector3.Dot(vectorWallBall, trigger.right)) < trigger.localScale.x + BallRadius &&
+                  Mathf.Abs(Vector3.Dot(vectorWallBall, trigger.forward)) < trigger.localScale.z + BallRadius)) return;
+        
+            GameManager.Instance.MinusBall();
+        }
     }
 }

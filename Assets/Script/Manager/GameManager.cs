@@ -97,9 +97,9 @@ public class GameManager : MonoBehaviour
         UIManager.Instance.gameOverPanel.gameObject.SetActive(true);
     }
 
-    public void MinusBall(int ball)
+    public void MinusBall()
     {
-        BallRemaining -= ball;
+        BallRemaining -= 1;
         UIManager.Instance.inGamePanel.BallText = BallRemaining.ToString();
 
         DestroyImmediate(Ball.gameObject);
