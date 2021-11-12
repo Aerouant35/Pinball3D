@@ -159,7 +159,7 @@ public class Ball : MonoBehaviour
 
 
             float dist = Vector3.Magnitude(normal);
-            if (!(dist < BallRadius + 1.05f*bumperRadius)) continue;
+            if (!(dist < BallRadius + bumperRadius )) continue;
             
             tempBallPos -= VectorSpeed * Time.fixedDeltaTime;
                 
@@ -178,7 +178,7 @@ public class Ball : MonoBehaviour
                 }
             }
                 
-            gameObject.transform.position += 6f*Mathf.Abs(BallRadius + bumperRadius) * normal.normalized;
+            gameObject.transform.position +=1.5f* Mathf.Abs( bumperRadius+BallRadius- dist) * normal.normalized;
             Vector3 perpendicular = normal.normalized * Vector3.Dot(VectorSpeed, normal.normalized);
             Vector3 parallel = VectorSpeed - perpendicular;
                 
@@ -238,7 +238,7 @@ public class Ball : MonoBehaviour
             Vector3 parallel = VectorSpeed - perpendicular;
 
             VectorSpeed = parallel - 0.8f*perpendicular 
-                          + normalFlipper *Mathf.Max(0, GameManager.Instance.flipPower[index] *100) *(1+0.5f+Vector3.Dot(vectorFlipperBall, flipperTransform.right)/(flipperRadiusX + BallRadius));
+                          + normalFlipper *Mathf.Max(0, GameManager.Instance.flipPower[index] *100) *(1.5f+Vector3.Dot(vectorFlipperBall, flipperTransform.right)/(flipperRadiusX + BallRadius));
 
             return tempBallPos;
         }
