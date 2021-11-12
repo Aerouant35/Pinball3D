@@ -66,8 +66,6 @@ public class ScoreManager : MonoBehaviour
         PlayerPrefs.SetInt("HighScore1", HighScore1);
         PlayerPrefs.SetInt("HighScore2", HighScore2);
         PlayerPrefs.SetInt("HighScore3", HighScore3);
-
-        LoadHighScore();
     }
 
     /// <summary>
