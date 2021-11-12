@@ -44,11 +44,9 @@ public class Ball : MonoBehaviour
         VectorSpeed.y -= 2*GameManager.Gravity * Time.fixedDeltaTime;
         
         PlaneCollision(BallTransform);
-        BallTransform.position = WallCollision(BallTransform);
-        BallTransform.position = BumperCollision(BallTransform);
-        BallTransform.position = FlipperCollision(BallTransform);
-        
-        transform.position = BallTransform.position;
+        transform.position = WallCollision(BallTransform);
+        transform.position = BumperCollision(BallTransform);
+        transform.position = FlipperCollision(BallTransform);
         
         if (VectorSpeed.magnitude*Time.fixedDeltaTime > 2*BallRadius)
         {
