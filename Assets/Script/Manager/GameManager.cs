@@ -58,7 +58,7 @@ public class GameManager : MonoBehaviour
             InitGame();        
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
             PauseGame();
@@ -132,14 +132,14 @@ public class GameManager : MonoBehaviour
         if (Input.GetButton("FlipperLeft"))
         {
             tempTLeft = TLeft;
-            TLeft += speedRotation * Time.deltaTime;
+            TLeft += speedRotation * Time.fixedDeltaTime;
             TLeft = Mathf.Min(1, TLeft);
             flipPower[0] = TLeft - tempTLeft;
         }
         else
         {
             tempTLeft = TLeft;
-            TLeft -= speedRotation * Time.deltaTime;
+            TLeft -= speedRotation * Time.fixedDeltaTime;
             TLeft = Mathf.Max(0, TLeft);
             flipPower[0] = TLeft - tempTLeft;
         }
@@ -147,14 +147,14 @@ public class GameManager : MonoBehaviour
         if (Input.GetButton("FlipperRight"))
         {
             tempTRight = TRight;
-            TRight += speedRotation * Time.deltaTime;
+            TRight += speedRotation * Time.fixedDeltaTime;
             TRight = Mathf.Min(1, TRight);
             flipPower[1] = TRight - tempTRight;
         }
         else
         {
             tempTRight = TRight;
-            TRight -= speedRotation * Time.deltaTime;
+            TRight -= speedRotation * Time.fixedDeltaTime;
             TRight = Mathf.Max(0, TRight);
             flipPower[1] = TRight - tempTRight;
         }

@@ -33,7 +33,7 @@ public class Ball : MonoBehaviour
     void Start()
     {
         BallTransform = transform;
-        BallRadius = BallTransform.localScale.x /*/ 2*/;
+        BallRadius = BallTransform.localScale.x / 2;
         
         VectorSpeed = Vector3.zero;
     }
@@ -41,21 +41,19 @@ public class Ball : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        VectorSpeed.y -= GameManager.Gravity * Time.deltaTime;
+        VectorSpeed.y -= 2*GameManager.Gravity * Time.fixedDeltaTime;
         
         PlaneCollision(BallTransform);
         BallTransform.position = WallCollision(BallTransform);
         BallTransform.position = BumperCollision(BallTransform);
         BallTransform.position = FlipperCollision(BallTransform);
-
         TriggerBox(BallTransform);
-
         transform.position = BallTransform.position;
-        if (VectorSpeed.magnitude*Time.deltaTime > 2*BallRadius)
+        if (VectorSpeed.magnitude*Time.fixedDeltaTime > 2*BallRadius)
         {
             //VectorSpeed *=2 * BallRadius / VectorSpeed.magnitude*Time.deltaTime ;
         }
-        transform.position += VectorSpeed * Time.deltaTime;
+        transform.position += VectorSpeed * Time.fixedDeltaTime;
     }
 
     private void PlaneCollision(Transform ballTransform)
@@ -81,9 +79,29 @@ public class Ball : MonoBehaviour
         }
     }
 
+    private void TriggerBox(Transform Ball)
+    {
+        foreach (var Trigger in EntityManager.Instance.triggerBox)
+        {
+
+            Vector3 vectorWallBall = Ball.position - Trigger.position;
+
+            if ((Mathf.Abs(Vector3.Dot(vectorWallBall, Trigger.up)) < Trigger.localScale.x/2 + BallRadius) &&
+                (Mathf.Abs(Vector3.Dot(vectorWallBall, Trigger.right)) < Trigger.localScale.x/2 + BallRadius) &&
+                (Mathf.Abs(Vector3.Dot(vectorWallBall, Trigger.forward)) < Trigger.localScale.z/2 + BallRadius))
+            {
+                GameManager.Instance.MinusBall();
+                Debug.Log("col");
+
+            }
+        
+        }
+
+    }
+
     private Vector3 WallCollision(Transform ballTransform)
     {
-        ForceDelta = 0.9f;
+        ForceDelta = 0.7f;
         
         foreach (var wall in EntityManager.Instance.walls)
         {
@@ -93,15 +111,15 @@ public class Ball : MonoBehaviour
             Vector3 normalWall = wallTrans.up;
             Vector3 vectorWallBall = ballTransform.position - wallTrans.position;
 
-            if (!(Mathf.Abs(Vector3.Dot(vectorWallBall, normalWall)) < BallRadius) ||
-                !(Mathf.Abs(Vector3.Dot(vectorWallBall, wallTrans.right)) < wallTrans.localScale.x * Width) ||
-                !(Mathf.Abs(Vector3.Dot(vectorWallBall, wallTrans.forward)) < wallTrans.localScale.z * Width)) continue;
+            if (!(Mathf.Abs(Vector3.Dot(vectorWallBall, normalWall)) < BallRadius + wallTrans.localScale.y/2) ||
+                !(Mathf.Abs(Vector3.Dot(vectorWallBall, wallTrans.right)) < wallTrans.localScale.x/2 ) ||
+                !(Mathf.Abs(Vector3.Dot(vectorWallBall, wallTrans.forward)) < wallTrans.localScale.z/2)) continue;
             
-            tempBallPos -= VectorSpeed * Time.deltaTime;
+            tempBallPos -= VectorSpeed * Time.fixedDeltaTime;
 
             for (int i = 0; i < FramesCut; i++)
             {
-                tempBallPos += i / FramesCut * VectorSpeed * Time.deltaTime;
+                tempBallPos += i / FramesCut * VectorSpeed * Time.fixedDeltaTime;
                 vectorWallBall = tempBallPos - wallTrans.position;
                     
                 if (Mathf.Abs(Vector3.Dot(vectorWallBall, normalWall)) < BallRadius)
@@ -138,13 +156,13 @@ public class Ball : MonoBehaviour
 
 
             float dist = Vector3.Magnitude(normal);
-            if (!(dist < BallRadius + bumperRadius)) continue;
+            if (!(dist < BallRadius + 1.05f*bumperRadius)) continue;
             
-            tempBallPos -= VectorSpeed * Time.deltaTime;
+            tempBallPos -= VectorSpeed * Time.fixedDeltaTime;
                 
             for (int i = 0; i < FramesCut; i++)
             {
-                tempBallPos += 1 / FramesCut * VectorSpeed * Time.deltaTime;
+                tempBallPos += 1 / FramesCut * VectorSpeed * Time.fixedDeltaTime;
                 ballCyllinder =ballTransform.position - bumperTransform.position;
                 normal =  ballCyllinder - (Vector3.Dot(ballCyllinder, bumperTransform.up) * bumperTransform.up);
                     
@@ -152,18 +170,17 @@ public class Ball : MonoBehaviour
                     
                 if (dist < BallRadius + bumperRadius)
                 {
+
                     break;
                 }
             }
                 
-            gameObject.transform.position += 10*Mathf.Abs(BallRadius + bumperRadius-dist) * normal.normalized;
+            gameObject.transform.position += 5f*Mathf.Abs(BallRadius + bumperRadius) * normal.normalized;
             Vector3 perpendicular = normal.normalized * Vector3.Dot(VectorSpeed, normal.normalized);
             Vector3 parallel = VectorSpeed - perpendicular;
                 
-            VectorSpeed = parallel  - perpendicular  + ForceDelta*normal.normalized;
-            
-            ScoreManager.Instance.AddScore(EntityManager.Instance.bumperScore);
-                
+            VectorSpeed = parallel  - perpendicular  + ForceDelta*normal.normalized ;
+
             return tempBallPos;
         }
 
@@ -193,15 +210,15 @@ public class Ball : MonoBehaviour
             Vector3 normalFlipper = flipperTransform.up;
             Vector3 vectorFlipperBall = tempBallPos - flipperTransform.position - flipperTransform.up * flipperRadiusY;
 
-            if (!(Mathf.Abs(Vector3.Dot(vectorFlipperBall, normalFlipper)) < BallRadius * (1+10*Mathf.Abs(GameManager.Instance.flipPower[index]))) ||
+            if (!(Mathf.Abs(Vector3.Dot(vectorFlipperBall, normalFlipper)) < BallRadius * (1+Mathf.Abs(GameManager.Instance.flipPower[index]))) ||
                 !(Mathf.Abs(Vector3.Dot(vectorFlipperBall, flipperTransform.right)) < flipperRadiusX + BallRadius) ||
                 !(Mathf.Abs(Vector3.Dot(vectorFlipperBall, flipperTransform.forward)) < flipperRadiusZ + BallRadius)) continue;
             
-            tempBallPos -= VectorSpeed * Time.deltaTime;
+            tempBallPos -= VectorSpeed * Time.fixedDeltaTime;
                 
             for (int i = 0; i < FramesCut; i++)
             {
-                tempBallPos += i / FramesCut * VectorSpeed * Time.deltaTime;
+                tempBallPos += i / FramesCut * VectorSpeed * Time.fixedDeltaTime;
                 vectorFlipperBall = tempBallPos - flipperTransform.position - flipperTransform.up * flipperRadiusY;
                 
                 if (Mathf.Abs(Vector3.Dot(vectorFlipperBall, normalFlipper)) < BallRadius)
@@ -215,26 +232,12 @@ public class Ball : MonoBehaviour
             Vector3 perpendicular= normalFlipper * Vector3.Dot(VectorSpeed, normalFlipper);
             Vector3 parallel = VectorSpeed - perpendicular;
 
-            VectorSpeed = parallel - perpendicular 
-                          + normalFlipper *Mathf.Max(0, GameManager.Instance.flipPower[index] *500) *(1+0.5f+Vector3.Dot(vectorFlipperBall, flipperTransform.right)/(flipperRadiusX + BallRadius));
+            VectorSpeed = parallel - 0.8f*perpendicular 
+                          + normalFlipper *Mathf.Max(0, GameManager.Instance.flipPower[index] *100) *(1+0.5f+Vector3.Dot(vectorFlipperBall, flipperTransform.right)/(flipperRadiusX + BallRadius));
 
             return tempBallPos;
         }
 
         return ballTransform.position;
-    }
-    
-    private void TriggerBox(Transform ball)
-    {
-        foreach (var trigger in EntityManager.Instance.triggerBox)
-        {
-            var vectorWallBall = ball.position - trigger.position;
-
-            if (!(Mathf.Abs(Vector3.Dot(vectorWallBall, trigger.up)) < trigger.localScale.y + BallRadius &&
-                  Mathf.Abs(Vector3.Dot(vectorWallBall, trigger.right)) < trigger.localScale.x + BallRadius &&
-                  Mathf.Abs(Vector3.Dot(vectorWallBall, trigger.forward)) < trigger.localScale.z + BallRadius)) return;
-        
-            GameManager.Instance.MinusBall();
-        }
     }
 }
