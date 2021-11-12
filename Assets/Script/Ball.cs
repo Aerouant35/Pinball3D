@@ -89,7 +89,7 @@ public class Ball : MonoBehaviour
 
             Vector3 vectorWallBall = Ball.position - Trigger.position;
 
-            if ((Mathf.Abs(Vector3.Dot(vectorWallBall, Trigger.up)) < Trigger.localScale.x/2 + BallRadius) &&
+            if ((Mathf.Abs(Vector3.Dot(vectorWallBall, Trigger.up)) < Trigger.localScale.y/2 + BallRadius) &&
                 (Mathf.Abs(Vector3.Dot(vectorWallBall, Trigger.right)) < Trigger.localScale.x/2 + BallRadius) &&
                 (Mathf.Abs(Vector3.Dot(vectorWallBall, Trigger.forward)) < Trigger.localScale.z/2 + BallRadius))
             {
